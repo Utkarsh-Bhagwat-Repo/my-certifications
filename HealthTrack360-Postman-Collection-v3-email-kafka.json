@@ -1,0 +1,720 @@
+{
+  "info": {
+    "_postman_id": "b72c3d16-cb67-416e-a7dc-4e96c7d1c7ba",
+    "name": "HealthTrack360 Backend v3 (Email & Kafka Enabled)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Postman collection for HealthTrack360 backend v7:\n- JWT login + refresh\n- Patient registration (triggers email via Kafka)\n- Admin doctor management (triggers email via Kafka)\n- Appointments, patient requests, medical records, file upload"
+  },
+  "item": [
+    {
+      "name": "AuthController (/api/auth)",
+      "item": [
+        {
+          "name": "Login - Get Access & Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Login with an existing user (e.g. ADMIN). Response contains accessToken and refreshToken.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Admin@123\"\n}"
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Refresh - Generate New Tokens",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "Exchange a valid refresh token for a new access token and refresh token.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "PatientController (/api/patients)",
+      "item": [
+        {
+          "name": "Register Patient (Triggers Email)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "register"
+              ]
+            },
+            "description": "Use Case 1 - Patient registration.\nSends Kafka notification + email to the patient.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"givenName\": \"Utkarsh\",\n  \"familyName\": \"Bhagwat\",\n  \"gender\": \"MALE\",\n  \"dateOfBirth\": \"1995-01-10\",\n  \"addressLine1\": \"Line 1\",\n  \"addressLine2\": \"Line 2\",\n  \"country\": \"India\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Pune\",\n  \"zip\": \"411001\",\n  \"phoneNumber\": \"+91-9999999999\",\n  \"email\": \"patient1@example.com\",\n  \"password\": \"Password@123\"\n}"
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Get My Patient Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "me"
+              ]
+            },
+            "description": "Get the logged-in patient's profile using the bearer accessToken."
+          }
+        },
+        {
+          "name": "Update My Demographics (Patient)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "me"
+              ]
+            },
+            "description": "Use Case 2 - Patient demographic update for the logged-in patient.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"addressLine1\": \"Updated Line 1\",\n  \"addressLine2\": \"Updated Line 2\",\n  \"country\": \"India\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Mumbai\",\n  \"zip\": \"400001\",\n  \"phoneNumber\": \"+91-8888888888\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Patient Management (/api/patients)",
+      "item": [
+        {
+          "name": "Admin - Get All Patients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients"
+              ]
+            },
+            "description": "ADMIN only - list all patients."
+          }
+        },
+        {
+          "name": "Admin - Get Patient By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "1"
+              ]
+            },
+            "description": "ADMIN only - get patient details by ID."
+          }
+        },
+        {
+          "name": "Admin - Delete Patient By Id",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "1"
+              ]
+            },
+            "description": "ADMIN only - delete a patient by ID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - DoctorController (/api/admin/doctors)",
+      "item": [
+        {
+          "name": "Admin - Create Doctor (Triggers Email)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/doctors",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "doctors"
+              ]
+            },
+            "description": "Create a new doctor account. Triggers Kafka email notification to the doctor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Dr. John Doe\",\n  \"specialization\": \"Cardiology\",\n  \"email\": \"doctor1@example.com\",\n  \"password\": \"Password@123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Admin - Get All Doctors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/doctors",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "doctors"
+              ]
+            },
+            "description": "ADMIN only - list all doctors."
+          }
+        },
+        {
+          "name": "Admin - Get Doctor By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/doctors/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "doctors",
+                "1"
+              ]
+            },
+            "description": "ADMIN only - get doctor details by ID."
+          }
+        },
+        {
+          "name": "Admin - Update Doctor",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/doctors/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "doctors",
+                "1"
+              ]
+            },
+            "description": "ADMIN only - update doctor's details and enabled flag.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Dr. John Smith\",\n  \"specialization\": \"Cardiology\",\n  \"enabled\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Admin - Delete Doctor",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/doctors/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "doctors",
+                "1"
+              ]
+            },
+            "description": "ADMIN only - delete a doctor."
+          }
+        }
+      ]
+    },
+    {
+      "name": "AppointmentController (/api/appointments)",
+      "item": [
+        {
+          "name": "Book Appointment (Use Case 3)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "appointments"
+              ]
+            },
+            "description": "Patient books appointment with doctor.\nRequires PATIENT token.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": 1,\n  \"appointmentTime\": \"2025-01-15T10:30:00\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Appointments (Patient)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "appointments",
+                "me"
+              ]
+            },
+            "description": "List appointments for the logged-in patient."
+          }
+        },
+        {
+          "name": "Doctor Dashboard - Today Appointments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/doctor/today",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "appointments",
+                "doctor",
+                "today"
+              ]
+            },
+            "description": "Use Case 4 - Doctor dashboard view of today's appointments."
+          }
+        },
+        {
+          "name": "Get Appointment By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "appointments",
+                "1"
+              ]
+            },
+            "description": "Get details of a specific appointment by ID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "PatientRequestController (/api/requests)",
+      "item": [
+        {
+          "name": "Submit Patient Request (Use Case 6)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/requests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "requests"
+              ]
+            },
+            "description": "Patient submits a request/concern to their doctor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Need refill for BP medicine\",\n  \"doctorId\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Requests (Patient)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/requests/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "requests",
+                "me"
+              ]
+            },
+            "description": "List all requests created by the logged-in patient."
+          }
+        },
+        {
+          "name": "Doctor - Pending Requests",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/requests/doctor/pending",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "requests",
+                "doctor",
+                "pending"
+              ]
+            },
+            "description": "Doctor view of pending patient requests (part of Use Case 4 & 6)."
+          }
+        },
+        {
+          "name": "Doctor - Approve Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/requests/1/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "requests",
+                "1",
+                "approve"
+              ],
+              "query": [
+                {
+                  "key": "instruction",
+                  "value": "Approved. Take one tablet after food."
+                }
+              ]
+            },
+            "description": "Doctor approves the request and adds instruction."
+          }
+        },
+        {
+          "name": "Doctor - Reject Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/requests/1/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "requests",
+                "1",
+                "reject"
+              ],
+              "query": [
+                {
+                  "key": "instruction",
+                  "value": "Please book a follow-up appointment."
+                }
+              ]
+            },
+            "description": "Doctor rejects the request with a reason/instruction."
+          }
+        },
+        {
+          "name": "Get Request By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/requests/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "requests",
+                "1"
+              ]
+            },
+            "description": "Get patient request details by ID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "MedicalRecordController (/api/records)",
+      "item": [
+        {
+          "name": "Doctor - Create Medical Record (Use Case 5)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/records",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "records"
+              ]
+            },
+            "description": "Doctor creates a medical record for a completed appointment.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentId\": 1,\n  \"diagnosis\": \"Hypertension\",\n  \"observations\": \"BP slightly elevated\",\n  \"medication\": \"Amlodipine 5mg OD\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Patient - Get My Medical Records",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/records/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "records",
+                "me"
+              ]
+            },
+            "description": "Patient retrieves their medical record history."
+          }
+        },
+        {
+          "name": "Get Medical Record By Id (Doctor/Patient)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/records/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "records",
+                "1"
+              ]
+            },
+            "description": "Fetch a specific medical record by ID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "FileController (/api/files)",
+      "item": [
+        {
+          "name": "Upload File (Patient Attachment)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/files",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "files"
+              ]
+            },
+            "description": "Upload a file (image/PDF) associated with the patient. Requires authentication."
+          }
+        },
+        {
+          "name": "Download File By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/files/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "files",
+                "1"
+              ]
+            },
+            "description": "Download file by ID. Returns binary content with correct content-type and attachment header."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  }
+}
